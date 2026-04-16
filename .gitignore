@@ -1,0 +1,32 @@
+# ========================
+# Node.js & React (Frontend/Backend)
+# ========================
+node_modules/
+dist/
+build/
+npm-debug.log
+
+# ========================
+# Python & AI Engine
+# ========================
+venv/
+__pycache__/
+*.pyc
+
+# 🚨 DANGER: Never upload AI models to GitHub (Too large!)
+backend-python/Aura_Brain/
+*.safetensors
+*.bin
+*.pth
+
+# ========================
+# Security (CRITICAL)
+# ========================
+.env
+*.pem
+
+# ========================
+# OS Generated Files
+# ========================
+.DS_Store
+Thumbs.db
