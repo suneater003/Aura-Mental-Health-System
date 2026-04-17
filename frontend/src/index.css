@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply transition-colors duration-700 ease-in-out;
+  }
+}

@@ -1,0 +1,10 @@
+fastapi==0.109.1
+uvicorn==0.27.0
+torch==2.1.2
+transformers==4.36.2
+python-dotenv==1.0.0
+pydantic==2.5.3
+requests==2.31.0
+google-generativeai==0.3.1
+groq==0.4.2
+peft==0.7.1

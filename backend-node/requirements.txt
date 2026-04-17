@@ -1,0 +1,12 @@
+# Backend Node.js Dependencies (from package.json)
+# Install with: npm install
+
+express==5.2.1
+bcrypt==6.0.0
+cors==2.8.6
+dotenv==17.4.2
+jsonwebtoken==9.0.3
+mongoose==9.4.1
+
+# Development
+nodemon==3.0.1 (optional, for development auto-restart)

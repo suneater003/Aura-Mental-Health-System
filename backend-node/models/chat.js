@@ -27,6 +27,20 @@ const chatSchema = new mongoose.Schema({
             }
         }
     ],
+    // Chat Summary for 24 hours context
+    lastDailySummary: {
+        type: String,
+        default: null
+    },
+    // AI Analyzed Days
+    aiPositiveDays: {
+        type: Number,
+        default: 0
+    },
+    aiToughDays: {
+        type: Number,
+        default: 0
+    },
     // Tere dashboard graphs ke liye mood data
     moodData: [
         {
