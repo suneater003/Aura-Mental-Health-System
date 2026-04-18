@@ -23,7 +23,7 @@ const authenticateToken = (req, res, next) => {
 router.post('/log', authenticateToken, async (req, res) => {
   try {
     const { moodScore, emotions, notes, associatedGameId } = req.body;
-    console.log(`📝 [MOOD LOG] User: ${req.user.id}, Score: ${moodScore}, Emotions: ${emotions}, Notes: ${notes ? 'yes' : 'no'}`);
+    console.log(`📝 [MOOD LOG] User: ${req.user.userId}, Score: ${moodScore}, Emotions: ${emotions}, Notes: ${notes ? 'yes' : 'no'}`);
     
     // Optional: Analyze the mood using Python backend if notes are provided
     let analyzedEmotion = emotions?.[0] || 'neutral';
@@ -73,7 +73,7 @@ router.post('/log', authenticateToken, async (req, res) => {
     }
     
     const newMoodLog = new MoodLog({
-      userId: req.user.id,
+      userId: req.user.userId,
       moodScore,
       emotions: [analyzedEmotion],
       notes,
@@ -98,11 +98,11 @@ router.post('/log', authenticateToken, async (req, res) => {
 router.get('/history', authenticateToken, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 14; // Default to last 14 days
-    const logs = await MoodLog.find({ userId: req.user.id })
+    const logs = await MoodLog.find({ userId: req.user.userId })
                              .sort({ recordedAt: -1 })
                              .limit(limit);
     
-    console.log(`📊 Fetched ${logs.length} mood logs for user ${req.user.id}`);
+    console.log(`📊 Fetched ${logs.length} mood logs for user ${req.user.userId}`);
     logs.forEach(log => {
       console.log(`   ${new Date(log.recordedAt).toLocaleDateString()}: Score=${log.moodScore}, Emotion=${log.emotions?.[0]}, Valence=${log.valence}`);
     });
@@ -117,7 +117,7 @@ router.get('/history', authenticateToken, async (req, res) => {
 router.get('/analyze-chat-sentiment', authenticateToken, async (req, res) => {
   try {
     const Chat = require('../models/chat');
-    const chat = await Chat.findOne({ userId: req.user.id });
+    const chat = await Chat.findOne({ userId: req.user.userId });
     
     if (!chat || !chat.history || chat.history.length === 0) {
       return res.json({ 
@@ -138,7 +138,7 @@ router.get('/analyze-chat-sentiment', authenticateToken, async (req, res) => {
       });
     }
 
-    console.log(`💭 Analyzing chat sentiment for user ${req.user.id}`);
+    console.log(`💭 Analyzing chat sentiment for user ${req.user.userId}`);
     
     // Call Python sentiment analysis
     try {

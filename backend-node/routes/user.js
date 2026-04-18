@@ -183,25 +183,29 @@ router.post('/check-in', authenticateToken, async (req, res) => {
         if (daysSinceLastCheckIn <= 1 || daysSinceLastCheckIn === 0) {
             // Consecutive day - increment streak
             user.consecutiveCheckIns = (user.consecutiveCheckIns || 0) + 1;
+            user.zenStreak = user.consecutiveCheckIns; // Sync zenStreak with consecutiveCheckIns
             console.log(`   ✅ Streak incremented to: ${user.consecutiveCheckIns}`);
             stretchChanged = true;
         } else if (daysSinceLastCheckIn === 2) {
             // Missed one day - reset to 1
             user.consecutiveCheckIns = 1;
+            user.zenStreak = 1; // Sync zenStreak with consecutiveCheckIns
             console.log(`   ⚠️ Missed one day, streak reset to 1`);
             stretchChanged = true;
         } else {
             // Missed more than one day - reset completely
             user.consecutiveCheckIns = 1;
+            user.zenStreak = 1; // Sync zenStreak with consecutiveCheckIns
             console.log(`   ❌ Missed ${daysSinceLastCheckIn - 1} days, streak reset to 1`);
             stretchChanged = true;
         }
 
         // Update last check-in date
         user.lastCheckInDate = new Date();
+        user.lastActiveDate = new Date(); // Also update lastActiveDate for stats endpoint
         await user.save();
 
-        console.log(`   ✅ Check-in saved. Consecutive check-ins: ${user.consecutiveCheckIns}`);
+        console.log(`   ✅ Check-in saved. Consecutive check-ins: ${user.consecutiveCheckIns}, Zen Streak: ${user.zenStreak}`);
 
         res.json({
             checked_in_today: true,

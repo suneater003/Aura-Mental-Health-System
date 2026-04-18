@@ -110,7 +110,8 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
   const handleLogout = () => {
     localStorage.removeItem('aura_token');
     localStorage.removeItem('aura_user');
-    navigate('/login');
+    localStorage.removeItem('aura_activeTab');
+    navigate('/');
   };
 
   useEffect(() => {
@@ -165,40 +166,61 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
     if (activeTab === 'Mood') {
       fetchMoodCheckInData();
     }
-  }, [activeTab]);
+  }, [activeTab]); // Dependency array ensures it runs when tab changes
 
   const fetchMoodCheckInData = async () => {
     try {
       const token = localStorage.getItem('aura_token');
       if (!token) return;
 
-      // Register daily check-in
+      let streakFromCheckIn = 0;
+
+      // Register daily check-in and get streak immediately from response
       try {
         const checkInRes = await axios.post('http://localhost:5000/api/user/check-in', {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('Check-in registered:', checkInRes.data);
+        console.log('✅ Check-in registered:', checkInRes.data);
+        streakFromCheckIn = checkInRes.data.consecutive_check_ins || 0;
+        console.log('🔥 Streak from check-in:', streakFromCheckIn);
       } catch (e) {
-        console.error('Failed to register check-in:', e);
+        console.error('❌ Failed to register check-in:', e);
+        // Still try to fetch streak-status if check-in fails
+        try {
+          const streakRes = await axios.get('http://localhost:5000/api/user/streak-status', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          streakFromCheckIn = streakRes.data.consecutive_check_ins || 0;
+          console.log('🔥 Streak from status fallback:', streakFromCheckIn);
+        } catch (streakError) {
+          console.error('❌ Failed to fetch streak status:', streakError);
+        }
       }
 
       // Fetch mood history
-      const moodRes = await axios.get('http://localhost:5000/api/mood/history?limit=30', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMoodHistory(moodRes.data);
-
-      // Fetch campfire streak
       try {
-        const streakRes = await axios.get('http://localhost:5000/api/user/streak-status', {
+        const moodRes = await axios.get('http://localhost:5000/api/mood/history?limit=30', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setCampfireStreak(streakRes.data.consecutive_check_ins || 0);
+        console.log('📊 Mood history fetched:', moodRes.data.length, 'entries');
+        if (moodRes.data.length > 0) {
+          console.log('📋 First mood entry:', moodRes.data[0]);
+          console.log('📋 All moods:', moodRes.data);
+        } else {
+          console.warn('⚠️ No mood entries found in database. User needs to log moods on Home page first.');
+        }
+        setMoodHistory(moodRes.data);
       } catch (e) {
-        console.error('Failed to fetch streak:', e);
+        console.error('❌ Failed to fetch mood history:', e);
+        setMoodHistory([]); // Set to empty array on error
       }
+
+      // Set the campfire streak from check-in response
+      console.log('🏗️ Setting campfire streak to:', streakFromCheckIn);
+      setCampfireStreak(streakFromCheckIn);
+
     } catch (err) {
-      console.error('Failed to fetch mood check-in data:', err);
+      console.error('❌ Failed to fetch mood check-in data:', err);
     }
   };
 

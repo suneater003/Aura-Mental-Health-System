@@ -51,6 +51,16 @@ const Home = ({ isDarkMode }) => {
       const token = localStorage.getItem('aura_token');
       if (!token) return;
       
+      // Register daily check-in first
+      try {
+        const checkInRes = await axios.post(`${API_BASE_URL}/user/check-in`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('✅ Check-in registered from Home page:', checkInRes.data);
+      } catch (e) {
+        console.error('Failed to register check-in from Home page:', e);
+      }
+      
       // Fetch Mood History
       const moodRes = await axios.get(`${API_BASE_URL}/mood/history?limit=30`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -88,21 +98,32 @@ const Home = ({ isDarkMode }) => {
   };
 
   const handleMoodSubmit = async (score) => {
-    if (hasAnchoredToday) return; // Prevent double logging before midnight
+    if (hasAnchoredToday) {
+      console.log('ℹ️ Already anchored today, skipping mood submission');
+      return; // Prevent double logging before midnight
+    }
     
     setSelectedMood(score);
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem('aura_token');
       if (token) {
-        await axios.post(`${API_BASE_URL}/mood/log`, 
-          { moodScore: score, emotions: [MOODS.find(m => m.score === score)?.label] },
+        const moodLabel = MOODS.find(m => m.score === score)?.label || 'Unknown';
+        console.log(`📝 Logging mood: Score=${score}, Label=${moodLabel}`);
+        
+        const moodRes = await axios.post(`${API_BASE_URL}/mood/log`, 
+          { moodScore: score, emotions: [moodLabel] },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        fetchDashboardData(); // Refresh chart and lock anchoring
+        
+        console.log('✅ Mood logged successfully:', moodRes.data);
+        
+        // Refresh dashboard data after logging
+        await fetchDashboardData();
+        console.log('✅ Dashboard data refreshed after mood submission');
       }
     } catch (err) {
-      console.error("Failed to log mood:", err);
+      console.error("❌ Failed to log mood:", err);
     } finally {
       setTimeout(() => setIsSubmitting(false), 500);
     }
@@ -125,28 +146,49 @@ const Home = ({ isDarkMode }) => {
     if (!Array.isArray(moodHistory) || moodHistory.length === 0) return [{ name: 'Today', score: 3 }];
     
     const dailyMap = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     moodHistory.forEach(log => {
       const dateObj = new Date(log.recordedAt || log.createdAt || new Date());
+      dateObj.setHours(0, 0, 0, 0);
+      
+      const daysDiff = Math.floor((today.getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24));
       let dayStr = "Unknown";
+      
       try {
-        dayStr = dateObj.toLocaleDateString('en-US', { weekday: 'short' }); 
+        if (daysDiff === 0) {
+          dayStr = "Today";
+        } else if (daysDiff === 1) {
+          dayStr = "Yesterday";
+        } else {
+          const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          const month = dateObj.toLocaleDateString('en-US', { month: 'short' });
+          const date = dateObj.getDate();
+          dayStr = `${weekday}, ${month} ${date}`;
+        }
       } catch(e) {
-        dayStr = "Today";
+        dayStr = "Unknown";
       }
 
       if (!dailyMap[dayStr]) {
-        dailyMap[dayStr] = { sum: 0, count: 0 };
+        dailyMap[dayStr] = { sum: 0, count: 0, date: dateObj };
       }
       dailyMap[dayStr].sum += (Number(log.moodScore) || 3);
       dailyMap[dayStr].count += 1;
     });
 
-    const chartData = Object.keys(dailyMap).map(day => ({
-      name: day,
-      score: parseFloat((dailyMap[day].sum / dailyMap[day].count).toFixed(1))
-    }));
+    const chartData = Object.keys(dailyMap)
+      .map(day => ({
+        name: day,
+        score: parseFloat((dailyMap[day].sum / dailyMap[day].count).toFixed(1)),
+        date: dailyMap[day].date
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .slice(0, 7)
+      .reverse(); // Show oldest on left, newest on right
     
-    return chartData.reverse().slice(-7);
+    return chartData;
   };
 
   const chartData = processChartData();
@@ -263,19 +305,12 @@ const Home = ({ isDarkMode }) => {
         </div>
 
         {/* MOOD CHECK-IN PANEL */}
-        <div className={`lg:col-span-4 p-6 md:p-8 rounded-[2.5rem] border shadow-sm flex flex-col justify-center ${
+        <div className={`lg:col-span-4 p-6 md:p-8 rounded-[2.5rem] border shadow-sm flex flex-col justify-center relative ${
           isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-[#FFFBF0]/80 border-slate-100'
         }`}>
           <h3 className="text-xl font-bold mb-6 text-center">How are you feeling right now?</h3>
           
           <div className="grid grid-cols-5 gap-2 md:gap-3 mb-6 relative">
-            {/* Lock Overlay if already anchored */}
-            {hasAnchoredToday && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#FFFBF0]/40 dark:bg-slate-900/60 backdrop-blur-sm rounded-xl">
-                 <p className="font-bold text-sm text-center px-2">Mood anchored for today.</p>
-                 <p className="text-xs opacity-80">Resets at midnight.</p>
-              </div>
-            )}
             {MOODS.map((mood) => {
               const isSelected = selectedMood === mood.score;
               return (
@@ -284,16 +319,24 @@ const Home = ({ isDarkMode }) => {
                   onClick={() => handleMoodSubmit(mood.score)}
                   disabled={isSubmitting || hasAnchoredToday}
                   className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 ${
-                    isSelected 
+                    isSelected && !hasAnchoredToday
                       ? `${mood.bg} ${mood.color} scale-110 drop-shadow-md border border-current` 
                       : `hover:bg-slate-500/10 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'} hover:scale-105 active:scale-95 border border-transparent`
-                  } ${hasAnchoredToday && isSelected ? 'z-20 opacity-100' : hasAnchoredToday ? 'opacity-30' : ''}`}
+                  } ${hasAnchoredToday ? 'opacity-40 cursor-not-allowed' : ''}`}
                 >
                   <mood.icon size={28} className="mb-2" />
                   <span className="text-[10px] font-bold uppercase tracking-wider">{mood.label}</span>
                 </button>
               );
             })}
+            
+            {/* Lock Overlay if already anchored */}
+            {hasAnchoredToday && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-sm rounded-2xl">
+                 <p className="font-bold text-sm text-white text-center px-3 mb-1">Mood anchored for today.</p>
+                 <p className="text-xs text-slate-300">Resets at midnight.</p>
+              </div>
+            )}
           </div>
           
           <div className={`p-4 rounded-xl text-center text-sm font-medium ${isDarkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50 text-slate-600'}`}>
