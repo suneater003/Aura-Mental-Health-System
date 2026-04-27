@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, User, Moon, Sun, Bot, Shield, Wind, Sparkles, Calendar, Camera, Upload } from 'lucide-react';
 import axios from 'axios';
+import PWAInstallButton from '../components/PWAInstallButton';
 
 const LandingPage = ({ toggleTheme, isDarkMode }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -86,16 +87,19 @@ const LandingPage = ({ toggleTheme, isDarkMode }) => {
           </div>
           <span className="text-2xl font-black tracking-tight">Aura</span>
         </div>
-        <button 
-          onClick={toggleTheme} 
-          className={`p-3 rounded-full backdrop-blur-md border transition-all ${
-            isDarkMode 
-              ? 'border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 text-orange-200' 
-              : 'border-[#FFFBF0]/50 bg-[#FFFBF0]/50 shadow-sm hover:bg-[#FFFBF0] text-slate-600'
-          }`}
-        >
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </button>
+        <div className="flex items-center gap-3">
+          <PWAInstallButton variant="secondary" />
+          <button 
+            onClick={toggleTheme} 
+            className={`p-3 rounded-full backdrop-blur-md border transition-all ${
+              isDarkMode 
+                ? 'border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 text-orange-200' 
+                : 'border-[#FFFBF0]/50 bg-[#FFFBF0]/50 shadow-sm hover:bg-[#FFFBF0] text-slate-600'
+            }`}
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
       </nav>
 
       <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 flex flex-col lg:flex-row items-center justify-between gap-16 min-h-[calc(100vh-100px)]">
@@ -302,6 +306,10 @@ const LandingPage = ({ toggleTheme, isDarkMode }) => {
               }`}>
                 {isLoginMode ? 'Enter Aura' : 'Initiate Sanctuary'}
               </button>
+              
+              <div className="mt-4">
+                <PWAInstallButton variant="primary" className="w-full" />
+              </div>
             </form>
 
             <div className="mt-8 text-center text-sm font-medium">

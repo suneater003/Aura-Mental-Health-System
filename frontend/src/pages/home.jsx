@@ -8,6 +8,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer 
 } from 'recharts';
+import PWAInstallButton from '../components/PWAInstallButton';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -216,11 +217,14 @@ const Home = ({ isDarkMode }) => {
           <p className={isDarkMode ? 'text-slate-400' : 'text-slate-500'}>Your mental sanctuary at a glance.</p>
         </div>
 
-        <div className={`px-6 py-4 rounded-3xl border backdrop-blur-md max-w-sm w-full md:w-auto shadow-sm ${
-          isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-[#FFFBF0]/60 border-slate-200'
-        }`}>
-          <p className="text-sm font-semibold opacity-70 mb-1">Thought of the Day</p>
-          <p className="italic font-medium">"{thought}"</p>
+        <div className="flex items-center gap-4">
+          <div className={`px-6 py-4 rounded-3xl border backdrop-blur-md max-w-sm shadow-sm ${
+            isDarkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-[#FFFBF0]/60 border-slate-200'
+          }`}>
+            <p className="text-sm font-semibold opacity-70 mb-1">Thought of the Day</p>
+            <p className="italic font-medium">"{thought}"</p>
+          </div>
+          <PWAInstallButton variant="primary" />
         </div>
       </div>
 

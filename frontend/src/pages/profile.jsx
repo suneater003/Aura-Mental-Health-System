@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { Camera, Settings, Star, User as UserIcon } from 'lucide-react';
+import PWAInstallButton from '../components/PWAInstallButton';
 
 const getZodiacSign = (day, month) => {
   if ((month == 1 && day <= 20) || (month == 12 && day >= 22)) return "Capricorn ♑";
@@ -227,7 +228,9 @@ const Profile = ({ isDarkMode, user, setUser, isOnline, handleLogout }) => {
 
           </div>
           
-          <div className="col-span-1 md:col-span-2 flex justify-center mt-6">
+          <div className="col-span-1 md:col-span-2 flex flex-col gap-4 justify-center mt-6">
+            <PWAInstallButton variant="primary" className="w-full" />
+            
             <button 
               onClick={handleLogout}
               className={`px-8 py-3 rounded-full font-bold transition-all transform hover:-translate-y-0.5 shadow-lg ${

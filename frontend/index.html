@@ -1,13 +1,43 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Meta Tags for PWA -->
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Aura - AI-Powered Mental Health Support System. Your personal wellness companion with mindfulness games, mood tracking, and AI chat." />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aura" />
+    
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="apple-touch-icon" href="/icons/aura-icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preload Icons -->
+    <link rel="preload" href="/icons/aura-icon-192.png" as="image" />
+    <link rel="preload" href="/icons/aura-icon-512.png" as="image" />
+    
+    <!-- Title -->
+    <title>Aura - Mental Health & Wellness</title>
+    
+    <!-- Preload CSS for LCP optimization -->
+    <link rel="preload" href="/src/index.css" as="style" />
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- PWA Update Toast Container -->
+    <div id="pwa-notification-container"></div>
+    
+    <!-- Script Module -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Fallback for old browsers -->
+    <noscript>
+      <p>Aura requires JavaScript to be enabled. Please enable JavaScript in your browser settings.</p>
+    </noscript>
   </body>
 </html>
