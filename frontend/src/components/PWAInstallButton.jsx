@@ -12,16 +12,23 @@ export default function PWAInstallButton({ className = '', variant = 'primary' }
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 PWAInstallButton mounted - checking PWA status...');
+
     // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('✅ App already installed (standalone mode)');
       setIsInstalled(true);
       return;
     }
 
+    console.log('⏳ Waiting for beforeinstallprompt event...');
+
     // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (event) => {
+      console.log('🎉 beforeinstallprompt event fired!', event);
       event.preventDefault();
       setInstallPrompt(event);
+      console.log('✅ Install prompt saved and ready');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -86,7 +93,27 @@ export default function PWAInstallButton({ className = '', variant = 'primary' }
   }
 
   if (!installPrompt) {
-    return null;
+    console.log('⚠️ No install prompt available yet (beforeinstallprompt not fired)');
+    // ALWAYS show demo button on localhost for testing
+    console.log('💡 Running on localhost - showing demo install button (ALWAYS)');
+    return (
+      <button
+        onClick={() => alert('ℹ️ Install prompt not yet available. This will appear once the browser is ready. Try: 1) Hard refresh (Ctrl+Shift+R) 2) Open on mobile Chrome 3) Deploy to HTTPS')}
+        className={`
+          flex items-center justify-center gap-2 px-6 py-3 rounded-lg
+          bg-amber-500/30 text-amber-700 dark:text-amber-300 dark:bg-amber-500/20
+          font-semibold border-2 border-amber-500/50
+          cursor-pointer
+          transition-all duration-200
+          hover:bg-amber-500/40 dark:hover:bg-amber-500/30
+          ${className}
+        `}
+        title="Install App - Waiting for browser prompt"
+      >
+        <Download size={18} />
+        <span>📥 Install App (Testing)</span>
+      </button>
+    );
   }
 
   // Button variants
