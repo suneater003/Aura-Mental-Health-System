@@ -35,7 +35,7 @@ function App() {
       <div className={`min-h-screen transition-colors duration-500 ${
         isDarkMode 
           ? 'bg-slate-950 text-slate-200' 
-          : 'bg-amber-50/50 text-slate-800' // Amber-50 acts as our soft Dutch White base
+          : 'bg-amber-50/50 text-slate-800'
       }`}>
         <Routes>
           <Route path="/" element={<Login toggleTheme={toggleTheme} isDarkMode={isDarkMode} />} />

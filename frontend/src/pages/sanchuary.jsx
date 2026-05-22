@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Map, Activity, Wind, Flame, Sun, MessageSquare, Gamepad2, Sprout } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { Map, Activity, Wind, Flame, Sun, MessageSquare, Gamepad2, Sprout, MousePointerClick } from 'lucide-react';
 import BalloonPop from '../components/BalloonPop';
 import CoolDown from '../components/CoolDown';
 import BreathingWidget from '../components/BreathingWidget';
@@ -9,9 +10,22 @@ import LetItGo from '../components/LetItGo';
 import MindGarden from '../components/MindGarden';
 import BurnTheWorries from '../components/BurnTheWorries';
 import ZenTileTapping from '../components/ZenTileTapping';
+import ErrorBoundary from '../components/ErrorBoundary';
+import JPMR from '../components/JPMR';
 
 const Sanchuary = ({ isDarkMode }) => {
   const [activeGame, setActiveGame] = useState(null);
+  const [showJpmr, setShowJpmr] = useState(false);
+
+  // lock background scroll when JPMR full-screen is open
+  useEffect(() => {
+    if (showJpmr) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+    return undefined;
+  }, [showJpmr]);
 
   return (
     <div className={`h-full flex flex-col p-8 md:p-12 overflow-y-auto custom-scrollbar ${isDarkMode ? 'text-white' : 'text-slate-900'} w-full`}>
@@ -48,6 +62,7 @@ const Sanchuary = ({ isDarkMode }) => {
              }`}>
                <Gamepad2 size={16} /> Grounding Sanctuary
              </div>
+             {/* JPMR tile is integrated in the list below to match other game cards */}
              <h2 className="text-3xl font-black mb-2">Offline Wellness Suites</h2>
              <p className={`font-medium ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                These 8 grounding tools function entirely offline. Tap any card to begin an immersive mental exercise.
@@ -63,12 +78,22 @@ const Sanchuary = ({ isDarkMode }) => {
               { name: "Mind Garden", desc: "Plant seeds of positivity. Watch them grow as you log in daily.", icon: <Sprout size={28} />, color: "bg-green-600" },
               { name: "Cool Down", desc: "Emergency grounding tactics for high-anxiety moments (5-4-3-2-1 method).", icon: <Flame size={28} />, color: "bg-indigo-500" },
               { name: "Burn The Worries", desc: "Type out your deepest worries to digital paper, then watch them burn into ash.", icon: <Flame size={28} />, color: "bg-orange-600" },
-              { name: "Zen Tile Tapping", desc: "Find your rhythm. Tap the moving tiles in this silent focus game.", icon: <Activity size={28} />, color: "bg-teal-500" },
+              { name: "Zen Tile Tapping", desc: "Find your rhythm. Tap the moving tiles in this silent focus game.", icon: <MousePointerClick size={28} />, color: "bg-teal-500" },
+              { name: "JPMR", desc: "Progressive Muscle Relaxation — guided somatic practice.", icon: <Activity size={28} />, color: "bg-orange-500" },
               { name: "Mystery Game", desc: "A new grounding experience is being cultivated by our team.", icon: <Gamepad2 size={28} />, color: "bg-slate-500" }
             ].map((game, idx) => (
               <div 
                 key={idx} 
-                onClick={() => setActiveGame(game.name)}
+                onClick={(e) => { 
+                  // prevent the same click from reaching the modal backdrop and immediately closing it
+                  e.stopPropagation();
+                  if (game.name === 'JPMR') { 
+                    // debug
+                    // eslint-disable-next-line no-console
+                    console.log('[Sanctuary] opening JPMR');
+                    setShowJpmr(true); setActiveGame(null); 
+                  } else { setActiveGame(game.name); } 
+                }}
                 className={`group relative p-6 rounded-3xl border backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden ${
                 isDarkMode 
                   ? 'bg-slate-900/40 border-slate-700/50 hover:bg-slate-800/80 shadow-lg' 
@@ -87,6 +112,27 @@ const Sanchuary = ({ isDarkMode }) => {
             ))}
           </div>
         </>
+      )}
+      {showJpmr && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowJpmr(false)} />
+          <div className="relative z-10 w-full max-w-5xl">
+            <div className="absolute -top-2 right-0 z-20">
+              <button
+                onClick={() => setShowJpmr(false)}
+                className="px-3 py-2 rounded-full bg-white/95 dark:bg-zinc-800 border border-orange-500 text-orange-500 shadow-lg"
+              >
+                Close
+              </button>
+            </div>
+            <React.Suspense fallback={<div className="p-6 text-center text-white">Loading JPMR...</div>}>
+                <ErrorBoundary>
+                  <JPMR isDarkMode={isDarkMode} onComplete={() => setShowJpmr(false)} onClose={() => setShowJpmr(false)} fullScreen={true} />
+                </ErrorBoundary>
+            </React.Suspense>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
