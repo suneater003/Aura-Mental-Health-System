@@ -352,6 +352,7 @@ async def analyze_mood(request: MoodAnalysisRequest):
 # ==========================================
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.getenv("PORT", "8000"))
     print("\n✅ FastAPI app is ready!")
-    print("🚀 Starting Uvicorn server on http://127.0.0.1:8000")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    print(f"🚀 Starting Uvicorn server on 0.0.0.0:{port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -5,6 +5,7 @@ import axios from 'axios';
 import PWAInstallButton from '../components/PWAInstallButton';
 
 const LandingPage = ({ toggleTheme, isDarkMode }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
   const [isLoginMode, setIsLoginMode] = useState(true);
   
   // Form State
@@ -41,12 +42,12 @@ const LandingPage = ({ toggleTheme, isDarkMode }) => {
     
     try {
       if (isLoginMode) {
-        const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+        const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
         localStorage.setItem('aura_token', response.data.token);
         localStorage.setItem('aura_user', JSON.stringify(response.data.user));
         navigate('/warning');
       } else {
-        await axios.post('http://localhost:5000/api/auth/signup', { 
+        await axios.post(`${API_BASE_URL}/auth/signup`, { 
             fullName, username, dob, email, password, gender, profilePicture 
         });
         alert("Sanctuary established! Please enter now.");

@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 import PWAInstallButton from '../components/PWAInstallButton';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const MOODS = [
   { score: 5, label: 'Great', icon: Smile, color: 'text-emerald-500', bg: 'bg-emerald-500/20' },

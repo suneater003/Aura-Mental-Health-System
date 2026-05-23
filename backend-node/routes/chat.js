@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Chat = require('../models/chat');
+const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000';
 
 // Inline middleware for auth
 const authenticateToken = (req, res, next) => {
@@ -56,7 +57,7 @@ router.get('/', authenticateToken, async (req, res) => {
                     let summary = '';
                     
                     try {
-                        const pyRes = await fetch('http://127.0.0.1:8000/api/summarize_chat', {
+                        const pyRes = await fetch(`${PYTHON_API_URL}/api/summarize_chat`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(pyData),
@@ -145,7 +146,7 @@ router.post('/', authenticateToken, async (req, res) => {
         // Send to Python Backend
         let pythonResponse;
         try {
-            const pyRes = await fetch('http://127.0.0.1:8000/api/chat', {
+            const pyRes = await fetch(`${PYTHON_API_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

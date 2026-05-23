@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const MoodLog = require('../models/MoodLog');
+const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000';
 
 const jwtSecret = process.env.JWT_SECRET || 'aura_secret_key';
 
@@ -32,7 +33,7 @@ router.post('/log', authenticateToken, async (req, res) => {
     if (notes) {
       try {
         console.log(`   Analyzing notes for emotion...`);
-        const pyRes = await fetch('http://127.0.0.1:8000/api/analyze_mood', {
+        const pyRes = await fetch(`${PYTHON_API_URL}/api/analyze_mood`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -142,7 +143,7 @@ router.get('/analyze-chat-sentiment', authenticateToken, async (req, res) => {
     
     // Call Python sentiment analysis
     try {
-      const pyRes = await fetch('http://127.0.0.1:8000/api/analyze_mood', {
+      const pyRes = await fetch(`${PYTHON_API_URL}/api/analyze_mood`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 
 const Dashboard = ({ toggleTheme, isDarkMode }) => {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   const [user, setUser] = useState(() => {
@@ -87,7 +88,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
 
     try {
       const token = localStorage.getItem('aura_token');
-      const res = await axios.post('http://localhost:5000/api/chat', {
+      const res = await axios.post(`${API_BASE_URL}/chat`, {
         user_message: userMessage.text,
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -119,7 +120,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
       const token = localStorage.getItem('aura_token');
       if (token && isOnline) {
         try {
-          const res = await axios.get('http://localhost:5000/api/auth/me', {
+          const res = await axios.get(`${API_BASE_URL}/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(res.data.user);
@@ -133,7 +134,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
       const token = localStorage.getItem('aura_token');
       if (token && isOnline) {
         try {
-          const res = await axios.get('http://localhost:5000/api/chat', {
+          const res = await axios.get(`${API_BASE_URL}/chat`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.data.history) {
@@ -177,7 +178,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
 
       // Register daily check-in and get streak immediately from response
       try {
-        const checkInRes = await axios.post('http://localhost:5000/api/user/check-in', {}, {
+        const checkInRes = await axios.post(`${API_BASE_URL}/user/check-in`, {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log('✅ Check-in registered:', checkInRes.data);
@@ -187,7 +188,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
         console.error('❌ Failed to register check-in:', e);
         // Still try to fetch streak-status if check-in fails
         try {
-          const streakRes = await axios.get('http://localhost:5000/api/user/streak-status', {
+          const streakRes = await axios.get(`${API_BASE_URL}/user/streak-status`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           streakFromCheckIn = streakRes.data.consecutive_check_ins || 0;
@@ -199,7 +200,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
 
       // Fetch mood history
       try {
-        const moodRes = await axios.get('http://localhost:5000/api/mood/history?limit=30', {
+        const moodRes = await axios.get(`${API_BASE_URL}/mood/history?limit=30`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         console.log('📊 Mood history fetched:', moodRes.data.length, 'entries');
