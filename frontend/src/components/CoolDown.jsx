@@ -3,6 +3,8 @@ import { Eye, Hand, Volume2, Droplet, Heart, ChevronRight, Check } from 'lucide-
 import axios from 'axios';
 import { useMindfulTracker } from '../hooks/useMindfulTracker';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const CoolDown = ({ isDarkMode, onExit }) => {
   useMindfulTracker('CoolDown');
   const [stepIndex, setStepIndex] = useState(0);
@@ -12,7 +14,7 @@ const CoolDown = ({ isDarkMode, onExit }) => {
     try {
       const token = localStorage.getItem('aura_token');
       if (token) {
-        await axios.post('http://localhost:5000/api/games/progress/cooldown-grounding', 
+        await axios.post(`${API_BASE_URL}/games/progress/cooldown-grounding`, 
           { level: 1, score: 500, unlockedFeatures: ['Grounding Master'] },
           { headers: { Authorization: `Bearer ${token}` } }
         );

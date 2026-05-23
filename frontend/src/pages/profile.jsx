@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Camera, Settings, Star, User as UserIcon } from 'lucide-react';
 import PWAInstallButton from '../components/PWAInstallButton';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const getZodiacSign = (day, month) => {
   if ((month == 1 && day <= 20) || (month == 12 && day >= 22)) return "Capricorn ♑";
   if ((month == 1 && day >= 21) || (month == 2 && day <= 18)) return "Aquarius ♒";
@@ -48,7 +50,7 @@ const Profile = ({ isDarkMode, user, setUser, isOnline, handleLogout }) => {
     try {
       const token = localStorage.getItem('aura_token');
       if (token && isOnline) {
-        const res = await axios.put('http://localhost:5000/api/auth/profile', 
+        const res = await axios.put(`${API_BASE_URL}/auth/profile`, 
           editForm,
           { headers: { Authorization: `Bearer ${token}` }}
         );
@@ -74,7 +76,7 @@ const Profile = ({ isDarkMode, user, setUser, isOnline, handleLogout }) => {
         try {
           const token = localStorage.getItem('aura_token');
           if (token && isOnline) {
-            await axios.put('http://localhost:5000/api/auth/profile', 
+            await axios.put(`${API_BASE_URL}/auth/profile`, 
               { profilePicture: newUrl },
               { headers: { Authorization: `Bearer ${token}` } }
             );

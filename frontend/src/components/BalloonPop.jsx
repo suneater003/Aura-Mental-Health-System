@@ -4,6 +4,8 @@ import { Target, CheckCircle2, X } from 'lucide-react';
 import axios from 'axios';
 import { useMindfulTracker } from '../hooks/useMindfulTracker';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
 const BalloonPop = ({ isDarkMode, onExit }) => {
   useMindfulTracker('BalloonPop');
   const [phase, setPhase] = useState('input'); // 'input' | 'floating'
@@ -25,7 +27,7 @@ const BalloonPop = ({ isDarkMode, onExit }) => {
     try {
       const token = localStorage.getItem('aura_token');
       if (token) {
-        await axios.post('http://localhost:5000/api/games/progress/stress-balloon-pop', 
+        await axios.post(`${API_BASE_URL}/games/progress/stress-balloon-pop`, 
           { level: Math.floor(count / 5) + 1, score: count * 10, unlockedFeatures: ['Worry Free'] },
           { headers: { Authorization: `Bearer ${token}` } }
         );

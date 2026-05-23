@@ -29,6 +29,13 @@ app.use('/api/mood', moodRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/user', userRoutes);
 
+// Temporary compatibility aliases for older frontend builds that still call routes without /api
+app.use('/auth', authRoutes);
+app.use('/games', gamesRoutes);
+app.use('/mood', moodRoutes);
+app.use('/chat', chatRoutes);
+app.use('/user', userRoutes);
+
 // Simple test route
 app.get('/', (req, res) => {
     res.send('Aura Node.js Identity Server is Running!');
