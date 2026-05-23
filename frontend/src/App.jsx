@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/login';
 import WarningPage from './pages/warningpage';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/dashboard';
 
 // A simple wrapper to protect routes (moved outside App to prevent remounting on state changes)
 const ProtectedRoute = ({ children }) => {
