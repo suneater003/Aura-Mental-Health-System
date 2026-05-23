@@ -113,6 +113,7 @@ const Dashboard = ({ toggleTheme, isDarkMode }) => {
     localStorage.removeItem('aura_user');
     localStorage.removeItem('aura_activeTab');
     navigate('/');
+    
   };
 
   useEffect(() => {
