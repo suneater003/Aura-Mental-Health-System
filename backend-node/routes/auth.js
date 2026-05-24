@@ -58,6 +58,7 @@ router.get('/me', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Auth /me error:', error);
         res.status(500).json({ message: "Error fetching user data", error: error.message });
     }
 });
@@ -95,6 +96,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Auth /profile error:', error);
         res.status(500).json({ message: "Error updating profile", error: error.message });
     }
 });
@@ -130,6 +132,7 @@ router.post('/signup', async (req, res) => {
 
         res.status(201).json({ message: "Account created successfully! You can now login." });
     } catch (error) {
+        console.error('Auth /signup error:', error);
         res.status(500).json({ message: "Error creating account", error: error.message });
     }
 });
@@ -169,6 +172,7 @@ router.post('/login', async (req, res) => {
             } 
         });
     } catch (error) {
+        console.error('Auth /login error:', error);
         res.status(500).json({ message: "Error logging in", error: error.message });
     }
 });

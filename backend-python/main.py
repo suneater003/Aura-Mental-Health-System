@@ -2,8 +2,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# Heavy ML libs are imported dynamically below to allow lightweight deployments
+TORCH_AVAILABLE = False
+empathy_model = None
+empathy_tokenizer = None
+EMOTION_CLASSES = []
 import requests
 import json
 import os
@@ -42,22 +46,27 @@ print("🧠 Waking up Aura's Ultimate Waterfall Brain (Gemini 2.5 & Groq 🚀)..
 # ==========================================
 try:
     print("Loading distilbert-base-uncased-finetuned-emotion (Emotion Classifier)...")
-    empathy_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-emotion")
-    empathy_model = AutoModelForSequenceClassification.from_pretrained(
-        "distilbert-base-uncased-finetuned-emotion",
-        device_map="auto"
-    )
+    # Import heavy libraries only when attempting to load the local model
+    try:
+        import torch
+        from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        empathy_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-emotion")
+        empathy_model = AutoModelForSequenceClassification.from_pretrained(
+            "distilbert-base-uncased-finetuned-emotion",
+            device_map="auto"
+        )
+        TORCH_AVAILABLE = True
+    except Exception as import_err:
+        print(f"⚠️ Transformer/Torch import failed: {import_err}")
+        empathy_model = None
+        empathy_tokenizer = None
+        TORCH_AVAILABLE = False
     print("✅ Emotion classifier model loaded successfully!")
 except Exception as e:
-    print(f"⚠️ Warning: Could not load emotion classifier model. Using keyword fallback instead. Error: {e}")
+    print(f"⚠️ Warning: Could not load emotion classifier model. Falling back to keyword/heuristic methods. Error: {e}")
     empathy_model = None
     empathy_tokenizer = None
-    EMOTION_CLASSES = ["angry", "fearful", "joyful", "neutral", "sad", "surprised"]  # Common emotion labels
-except Exception as e:
-    print(f"⚠️ Warning: Could not load Aura_Brain. Falling back to zero-shot classification. Error: {e}")
-    empathy_model = None
-    empathy_tokenizer = None
-    EMOTION_CLASSES = []
+    EMOTION_CLASSES = ["angry", "fearful", "joyful", "neutral", "sad", "surprised"]
 
 # ==========================================
 # 🌊 THE WATERFALL LOGIC (API Callers)
@@ -180,7 +189,7 @@ async def chat_with_aura(request: ChatRequest):
         
     # --- 2. INTENT CLASSIFICATION ---
     detected_intent = "neutral"
-    if empathy_model:
+    if empathy_model and empathy_tokenizer and TORCH_AVAILABLE:
         try:
             inputs = empathy_tokenizer(message, return_tensors="pt", truncation=True, max_length=512).to(empathy_model.device)
             predicted_class_id = empathy_model(**inputs).logits.argmax().item()
@@ -291,7 +300,7 @@ async def analyze_mood(request: MoodAnalysisRequest):
         print(f"   ✅ Detected: {emotion_label} (positive, confidence: {confidence:.2f})")
     else:
         # --- FALLBACK: USE ML MODEL IF AVAILABLE ---
-        if empathy_model and empathy_tokenizer:
+        if empathy_model and empathy_tokenizer and TORCH_AVAILABLE:
             try:
                 print(f"   Using ML model as fallback...")
                 inputs = empathy_tokenizer(text, return_tensors="pt", truncation=True, max_length=512).to(empathy_model.device)
@@ -344,6 +353,17 @@ async def analyze_mood(request: MoodAnalysisRequest):
         "confidence": confidence,
         "valence": valence,
         "text": text[:100]
+    }
+
+
+@app.get('/health')
+async def health():
+    """Health endpoint for deployments: shows basic status and available keys."""
+    return {
+        "status": "ok",
+        "torch_available": bool(TORCH_AVAILABLE),
+        "empathy_model_loaded": bool(empathy_model),
+        "keys": { k: bool(v) for k,v in KEYS.items() }
     }
 
 

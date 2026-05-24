@@ -41,6 +41,12 @@ app.get('/', (req, res) => {
     res.send('Aura Node.js Identity Server is Running!');
 });
 
+// Health check for deployment (returns Mongo connection state)
+app.get('/health', (req, res) => {
+    const mongoState = mongoose.connection.readyState; // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    res.json({ status: 'ok', mongoState });
+});
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
